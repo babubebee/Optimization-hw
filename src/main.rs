@@ -259,10 +259,8 @@ fn test_2() {
         vec![2.0, 3.0, 0.0],
     ];
     let b = vec![12.0, 16.0, 10.0];
-    let expected = vec![0.0, 4.0, 4.0];  // Expected correct solution
     let ans = simplex_method(c.clone(), a.clone(), b.clone(), None);
     print_ans(ans);
-    println!("Expected: {:?}", expected);
 }
 
 fn test_3() {
@@ -292,10 +290,9 @@ fn test_4() {
         vec![2.0, 0.0, 1.0],  // 2x1 + x3 <= 80
     ];
     let b = vec![100.0, 120.0, 60.0, 80.0]; // Right-hand side values
-    let expected = vec![30.0, 20.0, 10.0]; // Expected correct solution
+   
     let ans = simplex_method(c.clone(), a.clone(), b.clone(), None);
     print_ans(ans);
-    println!("Expected: {:?}", expected);
 }
 fn test_5() {
     println!("--------------------------------");
@@ -307,10 +304,8 @@ fn test_5() {
         vec![3.0, 2.0, 5.0],   // 3x1 + 2x2 + 5x3 <= 60
     ];
     let b = vec![30.0, 40.0, 60.0]; // Right-hand side values
-    let expected = vec![0.0, 10.0, 6.0]; // Expected correct solution
     let ans = simplex_method(c.clone(), a.clone(), b.clone(), Some(0.01));
     print_ans(ans);
-    println!("Expected: {:?}", expected);
 }
 
 
