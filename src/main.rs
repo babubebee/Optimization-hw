@@ -1,9 +1,9 @@
 mod simplex_method_impl {
     use std::{collections::HashMap, f64::MAX};
     use itertools::Itertools;
-    const EPS_DEFAULT: f64 = 1.0; // Need to define later
+    const EPS_DEFAULT: f64 = 0.1;
 
-    fn print_init(c: &Vec<f64>, a: &Vec<Vec<f64>>, b: &Vec<f64>, e: f64) {
+    fn print_init(c: &Vec<f64>, a: &Vec<Vec<f64>>, b: &Vec<f64>, e: Option<f64>) {
         print!("max (or min) z = ");
         print!("({}) * x1", c[0]);
         for i in 1..c.len() {
@@ -23,6 +23,11 @@ mod simplex_method_impl {
             }
             println!(" <= {}", b[i]);
         }
+        match e {
+            None => { println!("With precision {} (default)", EPS_DEFAULT); },
+            Some(_) => { println!("With precision {}", e.unwrap());  }
+        }
+        
     }
     #[derive(Debug)]
     struct Table {
@@ -30,24 +35,17 @@ mod simplex_method_impl {
         rows: HashMap<String, usize>,
         columns: HashMap<String, usize>,
         x: usize,
-        s: usize
+        s: usize,
+        eps: f64
     }
-    pub enum Ret_State {
-        solved,
-        unbounded
-    }
-    impl Ret_State {
-        pub fn to_string(&self) -> &str {
-            match self {
-                Ret_State::solved => { "Solved "}
-                Ret_State::unbounded => { "Unbounded" }
-            }
-        }
+    pub enum RetState {
+        Solved,
+        Unbounded
     }
     enum State {
-        unbound,
-        finished,
-        in_progress
+        Unbound,
+        Finished,
+        InProgress
     }
     impl Table {
         fn print(&self) {
@@ -96,7 +94,7 @@ mod simplex_method_impl {
             }
         }
         fn var_change(&self) -> (String, String, State) {
-            let mut m = 0.0;
+            let mut m = -self.eps;
             let mut s = String::new();
             for i in 1..self.x + 1 {
                 if self.get("z", format!("x{i}").as_str()) < m {
@@ -104,7 +102,7 @@ mod simplex_method_impl {
                     s = format!("x{i}");
                 }                
             }
-            if (s.is_empty()) { return (String::new(), String::new(), State::finished) }
+            if s.is_empty() { return (String::new(), String::new(), State::Finished) }
             let mut n: f64 = MAX;
             let mut out = String::new();
             for i in self.rows.keys() {
@@ -114,18 +112,19 @@ mod simplex_method_impl {
                     out = i.clone();
                 }
             }
-            if (out.is_empty()) { return (String::new(), String::new(), State::unbound) }
+            if out.is_empty() { return (String::new(), String::new(), State::Unbound) }
             let go_in = s;
             let go_out = out;
-            (go_in, go_out, State::in_progress)
+            (go_in, go_out, State::InProgress)
         }
-        fn init(c: &Vec<f64>, a: &Vec<Vec<f64>>, b: &Vec<f64>) -> Self {
+        fn init(c: &Vec<f64>, a: &Vec<Vec<f64>>, b: &Vec<f64>, eps: f64) -> Self {
             let mut table = Self {
                 data: Vec::new(),
                 rows: HashMap::new(),
                 columns: HashMap::new(),
                 x: c.len(),
-                s: b.len()
+                s: b.len(),
+                eps
             };
             for i in 1..c.len() + 1 {
                 table.columns.insert(format!("x{}", i), i - 1);
@@ -170,38 +169,59 @@ mod simplex_method_impl {
         }
     }
 
-    pub fn simplex_method(c: Vec<f64>, a: Vec<Vec<f64>>, b: Vec<f64>, e: Option<f64>) -> (Ret_State, Option<HashMap<String, f64>>, Option<f64>) {
-        let e = e.unwrap_or(EPS_DEFAULT);
+    pub fn simplex_method(c: Vec<f64>, a: Vec<Vec<f64>>, b: Vec<f64>, e: Option<f64>) -> (RetState, Option<HashMap<String, f64>>, Option<f64>) {
         print_init(&c, &a, &b, e);
-        let mut table = Table::init(&c, &a, &b);
+        let e = e.unwrap_or(EPS_DEFAULT);
+        let mut table = Table::init(&c, &a, &b, e);
         let mut it = 0;
+        println!("Initial table:");
+        table.print();
         loop {
             println!("-----------");
             let (a, b, c) = table.var_change();
             match c {
-                State::in_progress => {},
-                State::unbound => {
+                State::InProgress => {},
+                State::Unbound => {
                     // println!("The problem is unbounded!");
-                    return (Ret_State::unbounded, None, None);
+                    return (RetState::Unbounded, None, None);
                 },
-                State::finished => { 
+                State::Finished => { 
                     // println!("Finished!");
                     break
                 }
             }
-            println!("Iteration #{}:", it);
-            println!("{} enters {}!", a, b);
-            table.print();
             table.change_row(a.as_str(), b.as_str());
+            println!("Iteration #{}:", it);
+            println!("{} enters, {} leaves!", a, b);
+            table.print();
             it += 1;
         }
-        (Ret_State::solved, Some(table.result_vec()), Some(table.result()))
+        (RetState::Solved, Some(table.result_vec()), Some(table.result()))
     }
 }
 
-use simplex_method_impl::{simplex_method, Ret_State};
+use itertools::Itertools;
+use simplex_method_impl::{simplex_method, RetState};
 
-fn main() {
+fn print_ans((a, b, c): (RetState, Option<std::collections::HashMap<String, f64>>, Option<f64>)) {
+    match a {
+        RetState::Solved => {
+            println!("Solved!");
+            let b = b.unwrap();
+            let c = c.unwrap();
+            println!("The maximum is {:.2} and the solution is:", c);
+            for i in b.keys().sorted() {
+                println!("{i} = {:.2}", b.get(i).unwrap_or(&0.0));
+            }
+        },
+        RetState::Unbounded => {
+            println!("Could not solve the problem since it is unbounded!");
+        }
+    }
+}
+
+fn test_1() {
+    println!("Test 1:");
     let c = vec![9.0, 10.0, 16.0];
     let a = vec![
         vec![-18.0, -15.0, -12.0],
@@ -209,16 +229,26 @@ fn main() {
         vec![-5.0, -3.0, 3.0]
     ];
     let b = vec![360.0, 192.0, 180.0];
-    let (a, b, c) = simplex_method(c, a, b, None);
-    match a {
-        Ret_State::solved => {
-            println!("Solved!");
-            let b = b.unwrap();
-            let c = c.unwrap();
-            println!("The maximum is {c} and the solution is {:?}", b);
-        },
-        Ret_State::unbounded => {
-            println!("Could not solve the problem since it is unbounded!");
-        }
-    }
+    let ans = simplex_method(c, a, b, None);
+    print_ans(ans);
+}
+
+fn test_2() {
+    println!("Test 2:");
+    let c = vec![-1.0, 3.0, -3.0];
+    let a = vec![
+        vec![3.0, -1.0, -2.0],
+        vec![-2.0, -4.0, 4.0],
+        vec![1.0, 0.0, 1.0],
+        vec![-2.0, 2.0, 1.0],
+        vec![3.0, 0.0, 0.0],
+    ];
+    let b = vec![7.0, 3.0, 4.0, 8.0, 5.0];
+    let ans = simplex_method(c, a, b, None);
+    print_ans(ans);
+}
+
+fn main() {
+    test_1();
+    test_2();
 }
