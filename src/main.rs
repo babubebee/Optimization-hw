@@ -4,7 +4,7 @@ mod simplex_method_impl {
     const EPS_DEFAULT: f64 = 0.1;
 
     fn print_init(c: &Vec<f64>, a: &Vec<Vec<f64>>, b: &Vec<f64>, e: Option<f64>) {
-        print!("max (or min) z = ");
+        print!("max z = ");
         print!("({}) * x1", c[0]);
         for i in 1..c.len() {
             print!(" + ({}) * x{}", c[i], i + 1);
@@ -100,15 +100,30 @@ mod simplex_method_impl {
                 if self.get("z", format!("x{i}").as_str()) < m {
                     m = self.get("z", format!("x{i}").as_str());
                     s = format!("x{i}");
-                }                
+                }
             }
-            if s.is_empty() { return (String::new(), String::new(), State::Finished) }
+            if s.is_empty() {
+                let mut zero = false;
+                let mut non_zero = false;
+                for i in 1..self.x + 1 {
+                    if self.get("z", format!("x{i}").as_str()) == 0.0 {
+                        zero = true;
+                    } else if self.get("z", format!("x{i}").as_str()) > 0.0 {
+                        non_zero = true;
+                    }
+                }
+                if zero && non_zero {
+                    return (String::new(), String::new(), State::Unbound)
+                }
+                return (String::new(), String::new(), State::Finished)
+            }
             let mut n: f64 = MAX;
             let mut out = String::new();
             for i in self.rows.keys() {
                 if i == "z" { continue; }
-                if self.get(i.as_str(), "v") / self.get(i.as_str(), s.as_str()) <= n && self.get(i.as_str(), s.as_str()) >= 0.0 {
-                    n = self.get(i.as_str(), "v") / self.get(i.as_str(), s.as_str());
+                let entering_val = self.get(i.as_str(), s.as_str());
+                if (self.get(i.as_str(), "v") / entering_val < n) && (entering_val > 0.0) {
+                    n = self.get(i.as_str(), "v") / entering_val;
                     out = i.clone();
                 }
             }
@@ -173,7 +188,7 @@ mod simplex_method_impl {
         print_init(&c, &a, &b, e);
         let e = e.unwrap_or(EPS_DEFAULT);
         let mut table = Table::init(&c, &a, &b, e);
-        let mut it = 0;
+        let mut it = 1;
         println!("Initial table:");
         table.print();
         loop {
@@ -221,34 +236,110 @@ fn print_ans((a, b, c): (RetState, Option<std::collections::HashMap<String, f64>
 }
 
 fn test_1() {
+    println!();
     println!("Test 1:");
-    let c = vec![9.0, 10.0, 16.0];
+    let c = vec![3.0, 4.0]; // Objective coefficients
     let a = vec![
-        vec![-18.0, -15.0, -12.0],
-        vec![-6.0, 0.0, 0.0],
-        vec![-5.0, -3.0, 3.0]
+        vec![1.0, 2.0], // Coefficients for first constraint
+        vec![2.0, 1.0]  // Coefficients for second constraint
     ];
-    let b = vec![360.0, 192.0, 180.0];
+    let b = vec![10.0, 12.0]; // Right-hand side values
     let ans = simplex_method(c, a, b, None);
     print_ans(ans);
 }
+
 
 fn test_2() {
+    println!("--------------------------------");
     println!("Test 2:");
-    let c = vec![-1.0, 3.0, -3.0];
+    let c = vec![3.0, 2.0, 1.0];
     let a = vec![
-        vec![3.0, -1.0, -2.0],
-        vec![-2.0, -4.0, 4.0],
-        vec![1.0, 0.0, 1.0],
-        vec![-2.0, 2.0, 1.0],
-        vec![3.0, 0.0, 0.0],
+        vec![1.0, 2.0, 1.0],
+        vec![4.0, 0.0, 1.0],
+        vec![2.0, 3.0, 0.0],
     ];
-    let b = vec![7.0, 3.0, 4.0, 8.0, 5.0];
+    let b = vec![12.0, 16.0, 10.0];
+    let expected = vec![0.0, 4.0, 4.0];  // Expected correct solution
+    let ans = simplex_method(c.clone(), a.clone(), b.clone(), None);
+    print_ans(ans);
+    println!("Expected: {:?}", expected);
+}
+
+fn test_3() {
+    println!("--------------------------------");
+    println!("Test 3:");
+    let c = vec![3.0, 4.0, 2.0];
+    let a = vec![
+        vec![1.0, 1.0, 0.0],
+        vec![2.0, 1.0, 1.0],
+        vec![1.0, 0.0, 1.0],
+        vec![0.0, 1.0, 2.0],
+    ];
+    let b = vec![50.0, 80.0, 40.0, 30.0];
     let ans = simplex_method(c, a, b, None);
     print_ans(ans);
 }
 
-fn main() {
+
+fn test_4() {
+    println!("--------------------------------");
+    println!("Test 4:");
+    let c = vec![4.0, 3.0, 5.0]; // Coefficients of the objective function
+    let a = vec![
+        vec![1.0, 2.0, 1.0],  // x1 + 2x2 + x3 <= 100
+        vec![3.0, 2.0, 0.0],  // 3x1 + 2x2 <= 120
+        vec![0.0, 1.0, 3.0],  // x2 + 3x3 <= 60
+        vec![2.0, 0.0, 1.0],  // 2x1 + x3 <= 80
+    ];
+    let b = vec![100.0, 120.0, 60.0, 80.0]; // Right-hand side values
+    let expected = vec![30.0, 20.0, 10.0]; // Expected correct solution
+    let ans = simplex_method(c.clone(), a.clone(), b.clone(), None);
+    print_ans(ans);
+    println!("Expected: {:?}", expected);
+}
+fn test_5() {
+    println!("--------------------------------");
+    println!("Test 5:");
+    let c = vec![12.0, 15.0, 10.0]; // Objective function coefficients
+    let a = vec![
+        vec![2.0, 3.0, 1.0],   // 2x1 + 3x2 + x3 <= 30
+        vec![4.0, 1.0, 2.0],   // 4x1 + 1x2 + 2x3 <= 40
+        vec![3.0, 2.0, 5.0],   // 3x1 + 2x2 + 5x3 <= 60
+    ];
+    let b = vec![30.0, 40.0, 60.0]; // Right-hand side values
+    let expected = vec![0.0, 10.0, 6.0]; // Expected correct solution
+    let ans = simplex_method(c.clone(), a.clone(), b.clone(), Some(0.01));
+    print_ans(ans);
+    println!("Expected: {:?}", expected);
+}
+
+
+
+
+fn test_unbound() {
+    println!("--------------------------------");
+    println!("Test unbound:");
+    let c = vec![3.0, 2.0];
+    let a = vec![
+        vec![1.0, 1.0],
+        // vec![1.0, 0.0]
+    ];
+    let b = vec![4.0];
+    let ans = simplex_method(c, a, b, None);
+    print_ans(ans);
+}
+
+fn run_all_tests() {
     test_1();
     test_2();
+    test_3();
+    test_4();
+    test_5();
+    test_unbound();
+}
+
+
+
+fn main() {
+    run_all_tests();
 }
