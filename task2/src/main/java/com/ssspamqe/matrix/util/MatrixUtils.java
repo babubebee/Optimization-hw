@@ -19,4 +19,12 @@ public class MatrixUtils {
         return matrix;
     }
 
+    public static Matrix buildIdentityMatrixOfSize(int size) {
+        var matrix = new Matrix(size, size);
+        for (int i = 0; i < size; i++) {
+            matrix.setAt(Coordinate.of(i, i), 1.0);
+        }
+        return matrix;
+    }
+
 }
