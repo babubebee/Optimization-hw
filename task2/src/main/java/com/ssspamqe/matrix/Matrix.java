@@ -69,6 +69,17 @@ public class Matrix {
         return result;
     }
 
+    public Matrix multiply(double scalar) {
+        Matrix result = new Matrix(rows, columns);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                var coordinate = Coordinate.of(i, j);
+                result.setAt(coordinate, this.getAt(coordinate) * scalar);
+            }
+        }
+        return result;
+    }
+
     public static Matrix of(double[][] data) {
         int rows = data.length;
         int columns = data[0].length;
