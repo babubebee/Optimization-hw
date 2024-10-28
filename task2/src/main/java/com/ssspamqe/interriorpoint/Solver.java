@@ -39,7 +39,7 @@ public class Solver {
     }
 
     private Matrix calculatePMatrix(Matrix a) {
-        var idenity = MatrixUtils.buildIdentityMatrixOfSize(a.getRows());
+        var idenity = MatrixUtils.buildIdentityMatrixOfSize(a.getColumns());
         var transposed = MatrixUtils.transpose(a);
         var inversed = MatrixUtils.inverse(a.multiply(transposed));
         var multiplication = transposed.multiply(inversed).multiply(a);
