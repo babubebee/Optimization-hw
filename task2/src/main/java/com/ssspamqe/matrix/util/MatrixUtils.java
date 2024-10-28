@@ -37,4 +37,12 @@ public class MatrixUtils {
         return matrix;
     }
 
+    public static Matrix toColumnVector(double[] data) {
+        var matrix = new Matrix(data.length, 1);
+        for (int i = 0; i < data.length; i++) {
+            matrix.setAt(Coordinate.of(i, 0), data[i]);
+        }
+        return matrix;
+    }
+
 }
