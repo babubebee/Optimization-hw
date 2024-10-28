@@ -11,6 +11,16 @@ public class MatrixUtils {
         return INVERSER.inverse(matrix);
     }
 
+    public static Matrix transpose(Matrix matrix) {
+        var result = new Matrix(matrix.getColumns(), matrix.getRows());
+        for (int i = 0; i < matrix.getRows(); i++) {
+            for (int j = 0; j < matrix.getColumns(); j++) {
+                result.setAt(Coordinate.of(j, i), matrix.getAt(Coordinate.of(i, j)));
+            }
+        }
+        return result;
+    }
+
     public static Matrix toDiagonalMatrix(double[] array) {
         var matrix = new Matrix(array.length, array.length);
         for (int i = 0; i < matrix.getColumns(); i++) {
