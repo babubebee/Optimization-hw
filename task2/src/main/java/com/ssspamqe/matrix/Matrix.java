@@ -69,6 +69,18 @@ public class Matrix {
         return result;
     }
 
+    public static Matrix of(double[][] data) {
+        int rows = data.length;
+        int columns = data[0].length;
+        Matrix matrix = new Matrix(rows, columns);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                matrix.setAt(Coordinate.of(i, j), data[i][j]);
+            }
+        }
+        return matrix;
+    }
+
     public void setAt(Coordinate coordinate, double value) {
         data[coordinate.row()][coordinate.column()] = value;
     }
