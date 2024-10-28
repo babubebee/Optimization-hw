@@ -100,6 +100,18 @@ public class Matrix {
         return data[coordinate.row()][coordinate.column()];
     }
 
+    public double[] getRow(int row) {
+        return data[row];
+    }
+
+    public double[] getColumn(int column) {
+        double[] result = new double[rows];
+        for (int i = 0; i < rows; i++) {
+            result[i] = data[i][column];
+        }
+        return result;
+    }
+
     public int getRows() {
         return rows;
     }
