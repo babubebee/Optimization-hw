@@ -7,14 +7,14 @@ import com.ssspamqe.matrix.util.MatrixUtils;
 
 public class Solver {
 
-    public double[] maximize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
+    public IterationResult maximize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
         var solution = MatrixUtils.toColumnVector(initialPoint);
-
+        IterationResult lastIterationResult = null;
         for (int i = 0; i < iterations; i++) {
-            solution = proceedMaximizationIteration(solution, A, C, alpha);
+            lastIterationResult = proceedMaximizationIteration(solution, A, C, alpha);
+            solution = MatrixUtils.toColumnVector(lastIterationResult.point());
         }
-
-        return solution.getColumn(0);
+        return lastIterationResult;
     }
 
     public double[] minimize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
@@ -27,15 +27,15 @@ public class Solver {
         return solution.getColumn(0);
     }
 
-    private Matrix proceedMaximizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
+    private IterationResult proceedMaximizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
         var D = MatrixUtils.toDiagonalMatrix(solution.getColumn(0));
         var newA = A.multiply(D);
         var newC = D.multiply(C);
         var P = calculatePMatrix(newA);
         var cp = P.multiply(newC);
-        var newX = calculateNewXForMaximization(alpha, cp);
-        return D.multiply(newX);
-
+        var decisionVariables = calculateNewXForMaximization(alpha, cp);
+        var newSolution = D.multiply(decisionVariables);
+        return IterationResult.of(newSolution, decisionVariables);
     }
 
     private Matrix calculatePMatrix(Matrix a) {
