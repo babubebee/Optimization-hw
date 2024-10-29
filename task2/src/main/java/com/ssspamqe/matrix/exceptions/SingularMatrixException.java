@@ -6,6 +6,6 @@ public class SingularMatrixException extends MatrixException {
     }
 
     public SingularMatrixException() {
-        super("The matrix is singular");
+        super("The matrix is singular, try to reduce amount of iterations");
     }
 }
