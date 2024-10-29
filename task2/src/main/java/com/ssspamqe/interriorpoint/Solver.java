@@ -7,35 +7,40 @@ import com.ssspamqe.matrix.util.MatrixUtils;
 
 public class Solver {
 
-    public IterationResult maximize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
+    public InteriorPointResult maximize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
         var solution = MatrixUtils.toColumnVector(initialPoint);
-        IterationResult lastIterationResult = null;
         for (int i = 0; i < iterations; i++) {
-            lastIterationResult = proceedMaximizationIteration(solution, A, C, alpha);
-            solution = MatrixUtils.toColumnVector(lastIterationResult.point());
+            solution = proceedMaximizationIteration(solution, A, C, alpha);
         }
-        return lastIterationResult;
+        return InteriorPointResult.of(calculateObjectiveFunctionValue(solution, C), solution);
     }
 
-    public IterationResult minimize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
+    public InteriorPointResult minimize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
         var solution = MatrixUtils.toColumnVector(initialPoint);
-        IterationResult lastIterationResult = null;
         for (int i = 0; i < iterations; i++) {
-            lastIterationResult = proceedMinimizationIteration(solution, A, C, alpha);
-            solution = MatrixUtils.toColumnVector(lastIterationResult.point());
+            solution = proceedMinimizationIteration(solution, A, C, alpha);
         }
-        return lastIterationResult;
+        return InteriorPointResult.of(calculateObjectiveFunctionValue(solution, C), solution);
     }
 
-    private IterationResult proceedMaximizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
+    private double calculateObjectiveFunctionValue(Matrix solution, Matrix C) {
+        double[] coefficients = C.getColumn(0);
+        double[] variables = solution.getColumn(0);
+        double result = 0;
+        for (int i = 0; i < coefficients.length; i++) {
+            result += coefficients[i] * variables[i];
+        }
+        return result;
+    }
+
+    private Matrix proceedMaximizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
         var D = MatrixUtils.toDiagonalMatrix(solution.getColumn(0));
         var newA = A.multiply(D);
         var newC = D.multiply(C);
         var P = calculatePMatrix(newA);
         var cp = P.multiply(newC);
         var decisionVariables = calculateNewXForMaximization(alpha, cp);
-        var newSolution = D.multiply(decisionVariables);
-        return IterationResult.of(newSolution, decisionVariables);
+        return D.multiply(decisionVariables);
     }
 
     private Matrix calculatePMatrix(Matrix a) {
@@ -69,15 +74,14 @@ public class Solver {
         return mx;
     }
 
-    private IterationResult proceedMinimizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
+    private Matrix proceedMinimizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
         var D = MatrixUtils.toDiagonalMatrix(solution.getColumn(0));
         var newA = A.multiply(D);
         var newC = D.multiply(C);
         var P = calculatePMatrix(newA);
         var cp = P.multiply(newC);
         var decisionVariables = calculateNewXForMinimization(alpha, cp);
-        var newSolution = D.multiply(decisionVariables);
-        return IterationResult.of(newSolution, decisionVariables);
+        return D.multiply(decisionVariables);
     }
 
     private Matrix calculateNewXForMinimization(double alpha, Matrix cp) {
