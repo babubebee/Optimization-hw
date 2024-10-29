@@ -17,14 +17,14 @@ public class Solver {
         return lastIterationResult;
     }
 
-    public double[] minimize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
+    public IterationResult minimize(double[] initialPoint, Matrix A, Matrix C, double alpha, int iterations) {
         var solution = MatrixUtils.toColumnVector(initialPoint);
-
+        IterationResult lastIterationResult = null;
         for (int i = 0; i < iterations; i++) {
-            solution = proceedMinimizationIteration(solution, A, C, alpha);
+            lastIterationResult = proceedMinimizationIteration(solution, A, C, alpha);
+            solution = MatrixUtils.toColumnVector(lastIterationResult.point());
         }
-
-        return solution.getColumn(0);
+        return lastIterationResult;
     }
 
     private IterationResult proceedMaximizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
@@ -69,15 +69,15 @@ public class Solver {
         return mx;
     }
 
-    private Matrix proceedMinimizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
+    private IterationResult proceedMinimizationIteration(Matrix solution, Matrix A, Matrix C, double alpha) {
         var D = MatrixUtils.toDiagonalMatrix(solution.getColumn(0));
         var newA = A.multiply(D);
         var newC = D.multiply(C);
         var P = calculatePMatrix(newA);
         var cp = P.multiply(newC);
-        var newX = calculateNewXForMinimization(alpha, cp);
-        return D.multiply(newX);
-
+        var decisionVariables = calculateNewXForMinimization(alpha, cp);
+        var newSolution = D.multiply(decisionVariables);
+        return IterationResult.of(newSolution, decisionVariables);
     }
 
     private Matrix calculateNewXForMinimization(double alpha, Matrix cp) {
