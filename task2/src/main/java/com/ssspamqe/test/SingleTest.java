@@ -1,6 +1,6 @@
 package com.ssspamqe.test;
 
-import com.ssspamqe.interriorpoint.IterationResult;
+import com.ssspamqe.interriorpoint.InteriorPointResult;
 import com.ssspamqe.interriorpoint.Solver;
 import com.ssspamqe.matrix.Matrix;
 
@@ -21,14 +21,14 @@ public class SingleTest {
 
     private int iterations = 10;
 
-    public IterationResult solve() {
+    public InteriorPointResult solve() {
         if (problemType == ProblemType.MINIMIZATION) {
             return calculateMinimization();
         }
         return calculateMaximization();
     }
 
-    private IterationResult calculateMaximization() {
+    private InteriorPointResult calculateMaximization() {
         return SOLVER.maximize(
                 initialPoint,
                 MatrixA,
@@ -38,7 +38,7 @@ public class SingleTest {
         );
     }
 
-    private IterationResult calculateMinimization() {
+    private InteriorPointResult calculateMinimization() {
         return SOLVER.minimize(
                 initialPoint,
                 MatrixA,
