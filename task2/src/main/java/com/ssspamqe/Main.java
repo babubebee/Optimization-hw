@@ -29,6 +29,10 @@ public class Main {
                 {0},
                 {0}
         }));
+        test.setMatrixB(Matrix.of(new double[][]{
+                {10},
+                {12}
+        }));
         test.setInitialPoint(new double[]{1, 1, 7, 9});
         return test;
     }
@@ -49,6 +53,11 @@ public class Main {
                 {0},
                 {0},
                 {0}
+        }));
+        test.setMatrixB(Matrix.of(new double[][]{
+                {12},
+                {16},
+                {10}
         }));
         test.setInitialPoint(new double[]{1, 1, 1, 8, 11, 5});
         return test;
@@ -73,6 +82,12 @@ public class Main {
                 {0},
                 {0}
         }));
+        test.setMatrixB(Matrix.of(new double[][]{
+                {50},
+                {80},
+                {40},
+                {30}
+        }));
         test.setInitialPoint(new double[]{1, 1, 1, 48, 76, 38, 27});
         return test;
     }
@@ -96,6 +111,12 @@ public class Main {
                 {0},
                 {0}
         }));
+        test.setMatrixB(Matrix.of(new double[][]{
+                {100},
+                {120},
+                {60},
+                {80}
+        }));
         test.setInitialPoint(new double[]{1, 1, 1, 96, 115, 56, 77});
         return test;
     }
@@ -116,6 +137,11 @@ public class Main {
                 {0},
                 {0},
                 {0}
+        }));
+        test.setMatrixB(Matrix.of(new double[][]{
+                {30},
+                {40},
+                {60}
         }));
         test.setInitialPoint(new double[]{1, 1, 1, 24, 33, 50});
         return test;

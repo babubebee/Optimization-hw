@@ -17,6 +17,8 @@ public class SingleTest {
 
     private double alpha;
 
+    private Matrix MatrixB;
+
     private int iterations = 10;
 
     public IterationResult solve() {
@@ -92,5 +94,13 @@ public class SingleTest {
 
     public void setIterations(int iterations) {
         this.iterations = iterations;
+    }
+
+    public Matrix getMatrixB() {
+        return MatrixB;
+    }
+
+    public void setMatrixB(Matrix matrixB) {
+        MatrixB = matrixB;
     }
 }
