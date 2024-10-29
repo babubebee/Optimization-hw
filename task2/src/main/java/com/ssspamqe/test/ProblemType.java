@@ -1,5 +1,5 @@
 package com.ssspamqe.test;
 
-public enum TestType {
-    
+public enum ProblemType {
+    MAXIMIZATION, MINIMIZATION;
 }
