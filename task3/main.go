@@ -231,7 +231,7 @@ func callMethods(supply, demand []int, cost [][]int) {
 
 	header := []string{" ", "D1", "D2", "D3", "D4", "Supply"}
 
-	fmt.Println("+----------|----------|----------|----------|----------|----------+")
+	fmt.Println("+----------+----------+----------+----------+----------+----------+")
 	fmt.Printf("| %-8s | %-8s | %-8s | %-8s | %-8s | %-8s |\n", header[0], header[1], header[2], header[3], header[4], header[5])
 	fmt.Println("|----------|----------|----------|----------|----------|----------|")
 
@@ -249,7 +249,7 @@ func callMethods(supply, demand []int, cost [][]int) {
 		fmt.Printf(" %-8d |", val)
 	}
 	fmt.Println("		  |")
-	fmt.Println("+----------|----------|----------|----------|----------|----------+")
+	fmt.Println("+----------+----------+----------+----------+----------+----------+")
 
 	if !isBalanced(supply, demand) {
 		fmt.Println("The problem is not balanced!")
