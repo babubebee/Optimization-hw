@@ -318,7 +318,21 @@ func test2() {
 	fmt.Println()
 }
 
+func test3() {
+	supply := []int{20, 30, 25}
+	demand := []int{10, 25, 15, 25}
+	cost := [][]int{
+		{8, 6, 10, 9},
+		{9, 12, 13, 7},
+		{14, 9, 16, 5},
+	}
+	fmt.Println("Test 3")
+	callMethods(supply, demand, cost)
+	fmt.Println()
+}
+
 func main() {
 	test1()
 	test2()
+	test3()
 }
